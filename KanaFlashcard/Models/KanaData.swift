@@ -60,6 +60,39 @@ struct KanaData {
         KanaCharacter(character: "\u{3093}", romaji: "n", type: .hiragana),
     ]
 
+    static let hiraganaDakuten: [KanaCharacter] = [
+        // G-row (ka + dakuten)
+        KanaCharacter(character: "\u{304C}", romaji: "ga", type: .hiragana),
+        KanaCharacter(character: "\u{304E}", romaji: "gi", type: .hiragana),
+        KanaCharacter(character: "\u{3050}", romaji: "gu", type: .hiragana),
+        KanaCharacter(character: "\u{3052}", romaji: "ge", type: .hiragana),
+        KanaCharacter(character: "\u{3054}", romaji: "go", type: .hiragana),
+        // Z-row (sa + dakuten)
+        KanaCharacter(character: "\u{3056}", romaji: "za", type: .hiragana),
+        KanaCharacter(character: "\u{3058}", romaji: "ji", type: .hiragana),
+        KanaCharacter(character: "\u{305A}", romaji: "zu", type: .hiragana),
+        KanaCharacter(character: "\u{305C}", romaji: "ze", type: .hiragana),
+        KanaCharacter(character: "\u{305E}", romaji: "zo", type: .hiragana),
+        // D-row (ta + dakuten)
+        KanaCharacter(character: "\u{3060}", romaji: "da", type: .hiragana),
+        KanaCharacter(character: "\u{3062}", romaji: "ji", type: .hiragana),
+        KanaCharacter(character: "\u{3065}", romaji: "zu", type: .hiragana),
+        KanaCharacter(character: "\u{3067}", romaji: "de", type: .hiragana),
+        KanaCharacter(character: "\u{3069}", romaji: "do", type: .hiragana),
+        // B-row (ha + dakuten)
+        KanaCharacter(character: "\u{3070}", romaji: "ba", type: .hiragana),
+        KanaCharacter(character: "\u{3073}", romaji: "bi", type: .hiragana),
+        KanaCharacter(character: "\u{3076}", romaji: "bu", type: .hiragana),
+        KanaCharacter(character: "\u{3079}", romaji: "be", type: .hiragana),
+        KanaCharacter(character: "\u{307C}", romaji: "bo", type: .hiragana),
+        // P-row (ha + handakuten)
+        KanaCharacter(character: "\u{3071}", romaji: "pa", type: .hiragana),
+        KanaCharacter(character: "\u{3074}", romaji: "pi", type: .hiragana),
+        KanaCharacter(character: "\u{3077}", romaji: "pu", type: .hiragana),
+        KanaCharacter(character: "\u{307A}", romaji: "pe", type: .hiragana),
+        KanaCharacter(character: "\u{307D}", romaji: "po", type: .hiragana),
+    ]
+
     static let katakana: [KanaCharacter] = [
         // Vowels
         KanaCharacter(character: "\u{30A2}", romaji: "a", type: .katakana),
@@ -119,5 +152,38 @@ struct KanaData {
         KanaCharacter(character: "\u{30F3}", romaji: "n", type: .katakana),
     ]
 
-    static let allCharacters: [KanaCharacter] = hiragana + katakana
+    static let katakanaDakuten: [KanaCharacter] = [
+        // G-row (ka + dakuten)
+        KanaCharacter(character: "\u{30AC}", romaji: "ga", type: .katakana),
+        KanaCharacter(character: "\u{30AE}", romaji: "gi", type: .katakana),
+        KanaCharacter(character: "\u{30B0}", romaji: "gu", type: .katakana),
+        KanaCharacter(character: "\u{30B2}", romaji: "ge", type: .katakana),
+        KanaCharacter(character: "\u{30B4}", romaji: "go", type: .katakana),
+        // Z-row (sa + dakuten)
+        KanaCharacter(character: "\u{30B6}", romaji: "za", type: .katakana),
+        KanaCharacter(character: "\u{30B8}", romaji: "ji", type: .katakana),
+        KanaCharacter(character: "\u{30BA}", romaji: "zu", type: .katakana),
+        KanaCharacter(character: "\u{30BC}", romaji: "ze", type: .katakana),
+        KanaCharacter(character: "\u{30BE}", romaji: "zo", type: .katakana),
+        // D-row (ta + dakuten)
+        KanaCharacter(character: "\u{30C0}", romaji: "da", type: .katakana),
+        KanaCharacter(character: "\u{30C2}", romaji: "ji", type: .katakana),
+        KanaCharacter(character: "\u{30C5}", romaji: "zu", type: .katakana),
+        KanaCharacter(character: "\u{30C7}", romaji: "de", type: .katakana),
+        KanaCharacter(character: "\u{30C9}", romaji: "do", type: .katakana),
+        // B-row (ha + dakuten)
+        KanaCharacter(character: "\u{30D0}", romaji: "ba", type: .katakana),
+        KanaCharacter(character: "\u{30D3}", romaji: "bi", type: .katakana),
+        KanaCharacter(character: "\u{30D6}", romaji: "bu", type: .katakana),
+        KanaCharacter(character: "\u{30D9}", romaji: "be", type: .katakana),
+        KanaCharacter(character: "\u{30DC}", romaji: "bo", type: .katakana),
+        // P-row (ha + handakuten)
+        KanaCharacter(character: "\u{30D1}", romaji: "pa", type: .katakana),
+        KanaCharacter(character: "\u{30D4}", romaji: "pi", type: .katakana),
+        KanaCharacter(character: "\u{30D7}", romaji: "pu", type: .katakana),
+        KanaCharacter(character: "\u{30DA}", romaji: "pe", type: .katakana),
+        KanaCharacter(character: "\u{30DD}", romaji: "po", type: .katakana),
+    ]
+
+    static let allCharacters: [KanaCharacter] = hiragana + hiraganaDakuten + katakana + katakanaDakuten
 }

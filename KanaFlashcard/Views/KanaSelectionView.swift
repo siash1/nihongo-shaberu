@@ -11,7 +11,9 @@ struct KanaSelectionView: View {
                 actionButtons
 
                 kanaSection(title: "Hiragana", characters: KanaData.hiragana)
+                kanaSection(title: "Hiragana Dakuten", characters: KanaData.hiraganaDakuten)
                 kanaSection(title: "Katakana", characters: KanaData.katakana)
+                kanaSection(title: "Katakana Dakuten", characters: KanaData.katakanaDakuten)
 
                 startButton
             }
@@ -29,6 +31,14 @@ struct KanaSelectionView: View {
                 }
                 ActionButton(title: "All Katakana", isActive: viewModel.allKatakanaSelected) {
                     viewModel.selectAllKatakana()
+                }
+            }
+            HStack(spacing: 10) {
+                ActionButton(title: "All H. Dakuten", isActive: viewModel.allHiraganaDakutenSelected) {
+                    viewModel.selectAllHiraganaDakuten()
+                }
+                ActionButton(title: "All K. Dakuten", isActive: viewModel.allKatakanaDakutenSelected) {
+                    viewModel.selectAllKatakanaDakuten()
                 }
             }
             HStack(spacing: 10) {
