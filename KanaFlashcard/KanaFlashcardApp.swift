@@ -11,9 +11,20 @@ import UIKit
 @main
 struct KanaFlashcardApp: App {
     /// One shared kanji progress model for every window.
-    @State private var kanjiViewModel = KanjiViewModel()
+    @State private var kanjiViewModel: KanjiViewModel
+    /// The account and progress sync, also shared by every window.
+    @State private var auth: AuthService
+    @State private var sync: SyncService
+    /// The app's phase across all its windows: active while any is, background once all are.
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        let kanjiViewModel = KanjiViewModel()
+        let auth = AuthService()
+        _kanjiViewModel = State(initialValue: kanjiViewModel)
+        _auth = State(initialValue: auth)
+        _sync = State(initialValue: SyncService(auth: auth, kanji: kanjiViewModel))
+
         // .fontDesign(.rounded) does not reach UIKit navigation bars, so give their titles the
         // rounded face here. Only the text attributes are set: assigning a whole appearance would
         // replace the system's glass bar and its scroll-edge effect.
@@ -30,6 +41,22 @@ struct KanaFlashcardApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(kanjiViewModel: kanjiViewModel)
+                .environment(auth)
+                .environment(sync)
+        }
+        .commands {
+            DeckCommands()
+        }
+        // Launch counts as becoming active, so a stored session syncs at launch.
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            switch phase {
+            case .active:
+                sync.sceneBecameActive()
+            case .background:
+                sync.sceneEnteredBackground()
+            default:
+                break
+            }
         }
     }
 

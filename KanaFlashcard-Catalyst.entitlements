@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyLists-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Keychain Sharing with the app's own group: gives the Mac Catalyst build an App ID
+	     (application-identifier + provisioning profile), which the data-protection keychain
+	     needs to store the account session. The sandbox, network and microphone entitlements
+	     come from the ENABLE_* build settings. iOS builds do not use this file. -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)onearvo.jap.KanaFlashcard</string>
+	</array>
+</dict>
+</plist>

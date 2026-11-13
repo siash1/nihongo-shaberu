@@ -23,7 +23,7 @@ class SpeechService: NSObject, AVSpeechSynthesizerDelegate {
 
     func startRecording() throws {
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
+        try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothHFP])
         try audioSession.setActive(true)
 
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("voice_\(UUID().uuidString).wav")

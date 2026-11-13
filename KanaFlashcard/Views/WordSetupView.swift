@@ -8,6 +8,7 @@ struct WordSetupView: View {
     @State private var selectionCount = 0
     @Environment(\.appTheme) private var theme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(SyncService.self) private var sync
 
     var body: some View {
         ScrollView {
@@ -25,6 +26,9 @@ struct WordSetupView: View {
         .appBackground(.browse)
         .navigationTitle("Words")
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            AccountToolbarItem()
+        }
         .bottomActionBar {
             PrimaryActionButton(title: "Generate 10 Words", systemImage: "sparkles") {
                 viewModel.practiceMode = .generate
@@ -37,6 +41,11 @@ struct WordSetupView: View {
         }
         .sensoryFeedback(.selection, trigger: selectionCount)
         .onAppear {
+            viewModel.refreshSavedWordCounts()
+            dropEmptyTestLevels()
+        }
+        // A sync can add or remove saved words from another device.
+        .onChange(of: sync.revision) {
             viewModel.refreshSavedWordCounts()
             dropEmptyTestLevels()
         }
@@ -155,6 +164,18 @@ struct WordSetupView: View {
     private var wordBankCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             wordBankHeader
+
+            if viewModel.totalSavedWords >= WordStorageService.maxLiveWords {
+                Label {
+                    Text("Your word bank is full, so new words aren’t saved. Remove some words to make room.")
+                } icon: {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundStyle(theme.accent)
+                }
+                .font(.footnote)
+                .foregroundStyle(Color.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            }
 
             if viewModel.totalSavedWords == 0 {
                 HStack(alignment: .top, spacing: 12) {

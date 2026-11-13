@@ -52,5 +52,9 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(kanjiViewModel: KanjiViewModel())
+    let kanjiViewModel = KanjiViewModel()
+    let auth = AuthService()
+    ContentView(kanjiViewModel: kanjiViewModel)
+        .environment(auth)
+        .environment(SyncService(auth: auth, kanji: kanjiViewModel))
 }

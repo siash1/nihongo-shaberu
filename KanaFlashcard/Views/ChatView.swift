@@ -88,7 +88,10 @@ struct ChatView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        AccountToolbarItem()
         if !viewModel.messages.isEmpty {
+            // Its own glass, apart from the account button.
+            ToolbarSpacer(.fixed, placement: .topBarLeading)
             ToolbarItem(placement: .topBarLeading) {
                 Button("Clear") {
                     viewModel.clearChat()
@@ -172,7 +175,7 @@ struct ChatView: View {
 
             Divider()
 
-            Text("Tap the microphone and speak in English or Japanese. Your tutor answers out loud, with romaji and a translation.")
+            Text("\(Press.verb) the microphone and speak in English or Japanese. Your tutor answers out loud, with romaji and a translation.")
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -234,7 +237,13 @@ struct ChatView: View {
     }
 
     private func openSettings() {
-        if let url = URL(string: UIApplication.openSettingsURLString) {
+        #if targetEnvironment(macCatalyst)
+        // A Mac app has no settings page of its own: microphone access lives in Privacy & Security.
+        let settings = "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone"
+        #else
+        let settings = UIApplication.openSettingsURLString
+        #endif
+        if let url = URL(string: settings) {
             openURL(url)
         }
     }
@@ -353,12 +362,12 @@ struct ChatView: View {
     }
 
     private var statusText: String {
-        if viewModel.isRecording { return "Listening… tap to send" }
+        if viewModel.isRecording { return "Listening… \(Press.verb.lowercased()) to send" }
         if viewModel.isProcessing { return "Thinking…" }
         if viewModel.isSpeaking { return "Speaking…" }
         if showsMicrophoneOff { return "Microphone is off" }
         if isTyping { return "Type in English or Japanese" }
-        return "Tap to speak"
+        return "\(Press.verb) to speak"
     }
 
     private var statusLine: some View {
@@ -815,9 +824,14 @@ private extension String {
 }
 
 #Preview {
+    // The toolbar's account button needs both services (one AuthService, shared with SyncService).
+    let kanji = KanjiViewModel()
+    let auth = AuthService()
     NavigationStack {
         ChatView(viewModel: ChatViewModel())
     }
     .environment(\.appTheme, AppTab.talk.theme)
+    .environment(auth)
+    .environment(SyncService(auth: auth, kanji: kanji))
     .fontDesign(.rounded)
 }

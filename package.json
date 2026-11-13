@@ -1,0 +1,21 @@
+{
+  "name": "kanaflashcard-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "convex dev",
+    "deploy": "convex deploy",
+    "typecheck": "tsc --noEmit -p convex",
+    "test": "node --test tests/merge.test.ts",
+    "test:e2e": "node --test tests/e2e.test.mjs",
+    "fixtures": "node tests/generate-fixtures.ts"
+  },
+  "dependencies": {
+    "@convex-dev/auth": "^2.0.0",
+    "@convex-dev/rate-limiter": "^0.3.2",
+    "convex": "^1.50.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

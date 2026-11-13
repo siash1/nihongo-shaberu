@@ -8,6 +8,8 @@ struct SavedWordsView: View {
     @State private var listWidth: CGFloat = 0
     @Environment(\.appTheme) private var theme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(SyncService.self) private var sync
+    @Environment(AuthService.self) private var auth
     @ScaledMetric(relativeTo: .largeTitle) private var totalSize: CGFloat = 56
 
     var body: some View {
@@ -53,11 +55,26 @@ struct SavedWordsView: View {
                 viewModel.refreshSavedWordCounts()
             }
         } message: {
-            Text("This will remove all \(savedWords.count) saved words. This cannot be undone.")
+            Text(clearMessage)
         }
         .onAppear {
             savedWords = WordStorageService.loadAllWords()
         }
+        // A sync can add or remove saved words from another device.
+        .onChange(of: sync.revision) {
+            savedWords = WordStorageService.loadAllWords()
+            viewModel.refreshSavedWordCounts()
+        }
+    }
+
+    /// Names where Clear All applies: synced, it reaches every device of the account.
+    private var clearMessage: String {
+        let what = "all \(savedWords.count) saved \(savedWords.count == 1 ? "word" : "words")"
+        if sync.isSyncingWithAccount {
+            let account = auth.username.map { "signed in as \($0)" } ?? "signed in to your account"
+            return "This removes \(what) on every device \(account). This cannot be undone."
+        }
+        return "This removes \(what) on this device. This cannot be undone."
     }
 
     // MARK: - List
@@ -73,7 +90,10 @@ struct SavedWordsView: View {
                 let levelWords = savedWords.filter { $0.level == level }
                 if !levelWords.isEmpty {
                     Section {
-                        ForEach(levelWords) { word in
+                        // Keyed by the bank key, not the card's id: a reload (after a sync) makes new
+                        // cards, and rows keyed by them would all be replaced, losing VoiceOver focus
+                        // and open swipe actions.
+                        ForEach(levelWords, id: \.bankKey) { word in
                             wordRow(word)
                                 .listRowBackground(Color.cardFill)
                         }
@@ -183,5 +203,12 @@ struct SavedWordsView: View {
         }
         savedWords = WordStorageService.loadAllWords()
         viewModel.refreshSavedWordCounts()
+    }
+}
+
+private extension WordCard {
+    /// The word's identity in the bank, `"<word>|<level>"`: stable across reloads.
+    var bankKey: String {
+        WordStorageService.key(for: self)
     }
 }

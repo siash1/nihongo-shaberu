@@ -1,4 +1,5 @@
 import AVFoundation
+import Foundation
 import Observation
 
 @Observable
@@ -44,9 +45,14 @@ final class KanjiViewModel {
         unit.kanji.first { !isLearned($0) }
     }
 
+    /// Learned now. Passing the check again (relearning a unit) moves `learnedAt` to now too, so
+    /// the kanji stays learned even if a reset made on another device, not pulled yet, falls
+    /// between the first learning and this one.
     func markLearned(_ entry: KanjiEntry) {
-        guard progress.learnedKanji.insert(entry.character).inserted else { return }
-        KanjiProgressStore.save(progress)
+        let kanji = entry.character
+        progress.learnedKanji.insert(kanji)
+        progress.learnedAt[kanji] = ProgressClock.now(atLeast: max(progress.resetAt, progress.learnedAt[kanji] ?? 0) + 1)
+        saveLocalEdit()
     }
 
     // MARK: - Test scores
@@ -55,11 +61,13 @@ final class KanjiViewModel {
         progress.bestScores[scoreKey(kind, unit)]
     }
 
+    /// Records every finished test, not only a new best: the best shown stays the max, and the
+    /// latest score is kept beside it (see `KanjiProgress.addScore`).
     func recordScore(_ percent: Int, for kind: KanjiTestKind, in unit: KanjiUnit) {
         let key = scoreKey(kind, unit)
-        guard percent > progress.bestScores[key] ?? -1 else { return }
-        progress.bestScores[key] = percent
-        KanjiProgressStore.save(progress)
+        let time = ProgressClock.now(atLeast: max(progress.resetAt, progress.latestScoreTime(for: key)) + 1)
+        progress.addScore(percent, for: key, at: time)
+        saveLocalEdit()
     }
 
     /// A unit is complete once every kanji is learned and all three tests have been taken.
@@ -67,9 +75,25 @@ final class KanjiViewModel {
         nextKanji(in: unit) == nil && KanjiTestKind.allCases.allSatisfy { bestScore(for: $0, in: unit) != nil }
     }
 
+    /// Clears learned kanji and scores. The reset keeps its timestamp so it reaches other devices
+    /// (and removes progress there that is older than the reset).
     func resetProgress() {
-        progress = KanjiProgress()
-        KanjiProgressStore.clear()
+        progress = KanjiProgress(resetAt: ProgressClock.now(atLeast: progress.latestTimestamp))
+        saveLocalEdit()
+    }
+
+    /// Picks up progress that sync wrote to the store.
+    func reloadFromStore() {
+        let stored = KanjiProgressStore.load()
+        if stored != progress {
+            progress = stored
+        }
+    }
+
+    /// Saves a local edit and tells sync about it.
+    private func saveLocalEdit() {
+        KanjiProgressStore.save(progress)
+        NotificationCenter.default.post(name: .progressDidChangeLocally, object: nil)
     }
 
     private func scoreKey(_ kind: KanjiTestKind, _ unit: KanjiUnit) -> String {
@@ -98,10 +122,13 @@ final class KanjiViewModel {
     func speak(_ text: String) {
         // Use the playback category so the audio is heard even with the silent switch on.
         // Leave play-and-record alone: the Talk tab may be recording, and it plays through the speaker anyway.
+        // (Mac Catalyst has AVAudioSession; only the macOS command-line build of tests/AppFlow lacks it.)
+        #if !os(macOS)
         let audioSession = AVAudioSession.sharedInstance()
         if audioSession.category != .playAndRecord {
             try? audioSession.setCategory(.playback)
         }
+        #endif
         speechService.speak(text)
     }
 

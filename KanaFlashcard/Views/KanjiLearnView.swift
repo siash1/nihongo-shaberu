@@ -192,6 +192,7 @@ struct KanjiLearnView: View {
                     isAdvancing = false
                 }
             }
+            .keyboardShortcut(.return, modifiers: [])
             .transition(.lessonMaterialize(reduceMotion: reduceMotion))
         }
     }

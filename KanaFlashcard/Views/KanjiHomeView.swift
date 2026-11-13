@@ -6,7 +6,12 @@ struct KanjiHomeView: View {
     @Bindable var viewModel: KanjiViewModel
     @State private var showingResetAlert = false
     @State private var lessonUnit: KanjiUnit?   // fixed when the button is tapped, so the lesson keeps its unit
+    /// The review is pushed from this flag, outside the `learnedCount >= 4` condition: a reset that
+    /// arrives from another device mid-review must not pop it.
+    @State private var showingReview = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(AuthService.self) private var auth
+    @Environment(SyncService.self) private var sync
     @Namespace private var zoom
 
     var body: some View {
@@ -38,7 +43,16 @@ struct KanjiHomeView: View {
             KanjiLearnView(viewModel: viewModel, unit: unit)
                 .navigationTransition(.zoom(sourceID: "next", in: zoom))
         }
+        .navigationDestination(isPresented: $showingReview) {
+            KanjiQuizView(
+                viewModel: viewModel,
+                title: "Review",
+                makeQuestions: { viewModel.reviewQuestions() }
+            )
+            .navigationTransition(.zoom(sourceID: "review", in: zoom))
+        }
         .toolbar {
+            AccountToolbarItem()
             if viewModel.hasProgress {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -59,9 +73,7 @@ struct KanjiHomeView: View {
                 }
             }
         } message: {
-            Text(viewModel.learnedCount == 0
-                ? "This will clear all test scores. This cannot be undone."
-                : "This will forget the \(viewModel.learnedCount) kanji you have learned and all test scores. This cannot be undone.")
+            Text(resetMessage)
         }
         .bottomActionBar {
             if let unit = viewModel.nextUnit, let next = viewModel.nextKanji(in: unit) {
@@ -77,6 +89,18 @@ struct KanjiHomeView: View {
     }
 
     private var stacked: Bool { dynamicTypeSize.isAccessibilitySize }
+
+    /// Names where the reset applies: synced, it reaches every device of the account.
+    private var resetMessage: String {
+        let what = viewModel.learnedCount == 0
+            ? "all test scores"
+            : "the \(viewModel.learnedCount) kanji you have learned and all test scores"
+        if sync.isSyncingWithAccount {
+            let account = auth.username.map { "signed in as \($0)" } ?? "signed in to your account"
+            return "This forgets \(what) on every device \(account). This cannot be undone."
+        }
+        return "This forgets \(what) on this device. This cannot be undone."
+    }
 
     private var completedUnitCount: Int {
         viewModel.units.filter { viewModel.isComplete($0) }.count
@@ -160,13 +184,8 @@ struct KanjiHomeView: View {
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10))
             : AnyLayout(HStackLayout(spacing: 14))
 
-        return NavigationLink {
-            KanjiQuizView(
-                viewModel: viewModel,
-                title: "Review",
-                makeQuestions: { viewModel.reviewQuestions() }
-            )
-            .navigationTransition(.zoom(sourceID: "review", in: zoom))
+        return Button {
+            showingReview = true
         } label: {
             // Accessibility text sizes: icon above the text and no chevron, so the text keeps the full width.
             layout {

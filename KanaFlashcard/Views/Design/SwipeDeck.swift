@@ -153,7 +153,7 @@ struct SwipeDeck<Item, Front: View, Back: View>: View {
             CardFace(size: card, fill: .cardFill) {
                 front(item)
             } footer: {
-                Label("Tap to flip", systemImage: "hand.tap.fill")
+                Label("\(Press.verb) to flip", systemImage: Press.symbol)
                     .font(.footnote.weight(.medium))
                     .lineLimit(1)
                     .dynamicTypeSize(...DynamicTypeSize.xxLarge)
@@ -315,6 +315,21 @@ struct DeckActionBar<Item>: View {
             }
         }
         .animation(reduceMotion ? .appFade : .appSmooth, value: isRevealed)
+        // The Cards menu (Space, ←, →) drives the same actions as these buttons, only while the
+        // deck is on screen: a deck left open under another tab must not catch keys.
+        .focusedSceneValue(\.deckActions, isOnScreen ? commandActions : nil)
+        .onAppear { isOnScreen = true }
+        .onDisappear { isOnScreen = false }
+    }
+
+    @State private var isOnScreen = false
+
+    private var commandActions: DeckCommandActions? {
+        guard let item else { return nil }
+        if isRevealed {
+            return DeckCommandActions(grade: { correct in controller.commit(item: item, correct: correct) })
+        }
+        return DeckCommandActions(showAnswer: { controller.flip(isRevealed: false) })
     }
 
     private var transition: AnyTransition {

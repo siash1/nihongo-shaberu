@@ -140,6 +140,7 @@ struct KanjiQuizView: View {
                     guard !isAdvancing else { return }
                     dismiss()
                 }
+                .keyboardShortcut(.return, modifiers: [])
                 .transition(.quizMaterialize(reduceMotion: reduceMotion))
             } else if session.isAnswered {
                 PrimaryActionButton(title: "Continue") {
@@ -151,6 +152,7 @@ struct KanjiQuizView: View {
                         isAdvancing = false
                     }
                 }
+                .keyboardShortcut(.return, modifiers: [])
                 .transition(.quizMaterialize(reduceMotion: reduceMotion))
             }
         }
@@ -461,7 +463,7 @@ struct KanjiQuestionView: View {
             columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: twoColumns ? 2 : 1),
             spacing: 10
         ) {
-            ForEach(question.choices, id: \.self) { choice in
+            ForEach(Array(question.choices.enumerated()), id: \.element) { index, choice in
                 QuizChoiceTile(
                     text: choice,
                     status: status(of: choice),
@@ -470,6 +472,8 @@ struct KanjiQuestionView: View {
                 ) {
                     onSelect(choice)
                 }
+                // Keyboard (Mac, iPad): 1–4 pick the choices in reading order.
+                .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: [])
                 .disabled(isAnswered)
             }
         }

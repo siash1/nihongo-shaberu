@@ -28,6 +28,7 @@ struct KanaSelectionView: View {
         .navigationTitle("Practice")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
+            AccountToolbarItem()
             ToolbarItem(placement: .topBarTrailing) {
                 bulkSelectionButton
             }

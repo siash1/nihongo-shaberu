@@ -206,3 +206,16 @@ extension Text {
         fontDesign(.default)
     }
 }
+
+// MARK: - Platform wording
+
+/// How a hint names a press: "Tap" on iPhone and iPad, "Click" on the Mac.
+enum Press {
+    #if targetEnvironment(macCatalyst)
+    static let verb = "Click"
+    static let symbol = "cursorarrow.click"
+    #else
+    static let verb = "Tap"
+    static let symbol = "hand.tap.fill"
+    #endif
+}
