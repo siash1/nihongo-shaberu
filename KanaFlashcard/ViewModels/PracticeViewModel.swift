@@ -11,6 +11,8 @@ final class PracticeViewModel {
     private var remainingCards: [KanaCharacter] = []
     private var correctCount = 0
     private var wrongCount = 0
+    /// Cards marked wrong at least once; they do not count as "correct on first try".
+    private var missedIDs: Set<String> = []
 
     var totalCards: Int {
         selectedCharacters.count
@@ -20,8 +22,10 @@ final class PracticeViewModel {
         remainingCards.count + (currentCard != nil && !isPracticeComplete ? 1 : 0)
     }
 
+    /// Cards known first time out of all cards. Every card is eventually marked correct,
+    /// so counting correct answers would always give a perfect score.
     var scoreText: String {
-        "\(correctCount)/\(totalCards)"
+        "\(totalCards - missedIDs.count)/\(totalCards)"
     }
 
     var allHiraganaSelected: Bool {
@@ -97,6 +101,7 @@ final class PracticeViewModel {
     func startPractice() {
         correctCount = 0
         wrongCount = 0
+        missedIDs = []
         isPracticeComplete = false
         remainingCards = KanaData.allCharacters.filter { selectedCharacters.contains($0.id) }.shuffled()
         showNextCard()
@@ -110,6 +115,7 @@ final class PracticeViewModel {
     func markWrong() {
         wrongCount += 1
         if let card = currentCard {
+            missedIDs.insert(card.id)
             // Put it back at a random position in the remaining stack
             let insertIndex = remainingCards.isEmpty ? 0 : Int.random(in: 0...remainingCards.count)
             remainingCards.insert(card, at: insertIndex)
